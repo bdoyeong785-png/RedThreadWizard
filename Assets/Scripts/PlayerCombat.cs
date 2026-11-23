@@ -80,19 +80,21 @@ public class PlayerCombat : MonoBehaviour
     void MeleeAttack()
     {
         Debug.Log("몽둥이 휘두르기!");
-
-        // attackPoint 위치 기준으로 attackRange 반지름 내의 enemyLayer 오브젝트 감지
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayer);
 
         foreach (Collider2D enemy in hitEnemies)
         {
-            Debug.Log("근접 타격 성공: " + enemy.name);
-
-            // 감지된 적에서 EnemyBase 스크립트를 가져와 데미지 부여!
             EnemyBase enemyComponent = enemy.GetComponent<EnemyBase>();
             if (enemyComponent != null)
             {
                 enemyComponent.TakeDamage(meleeDamage);
+            }
+
+            // 보스 근접 타격 추가
+            BossController bossComponent = enemy.GetComponent<BossController>();
+            if (bossComponent != null)
+            {
+                bossComponent.TakeDamage(meleeDamage);
             }
         }
     }
