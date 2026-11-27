@@ -12,12 +12,12 @@ public class MagicBullet : MonoBehaviour
 
     public void Init(Vector2 direction)
     {
-        moveVector = new Vector3(direction.x, 0f, 0f);
+        // Y축 0f 고정을 풀고 대각선·부채꼴·마우스 방향 모두 그대로 날아가게 설정
+        moveVector = direction.normalized;
 
-        if (direction.x < 0)
-        {
-            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-        }
+        // 탄환 스프라이트가 날아가는 각도에 맞춰 자연스럽게 회전
+        float angle = Mathf.Atan2(moveVector.y, moveVector.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
         isFired = true;
         Destroy(gameObject, lifetime);

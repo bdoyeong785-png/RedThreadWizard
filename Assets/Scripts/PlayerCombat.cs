@@ -12,9 +12,13 @@ public class PlayerCombat : MonoBehaviour
 
     [Header("마법 영창 & 발사 (X 키)")]
     public GameObject magicBulletPrefab; // ★Project 창의 MagicBullet 프리팹 연결
-    public Transform wandTip;          // ★Player 자식 WandTip 연결
-    public float castTime = 0.5f;       // 테스트용: 0.5초만 눌러도 완충되도록 설정
+    public Transform wandTip;            // ★Player 자식 WandTip 연결
+    public float castTime = 0.5f;        // 영창 필요 시간
     public float mpCost = 15f;
+
+    [Header("부채꼴 발사 설정")]
+    public int bulletCount = 3;          // 한 번에 나갈 탄환 개수 (예: 3발)
+    public float spreadAngle = 30f;      // 부채꼴 전체 각도 (예: 30도면 -15도, 0도, +15도)
 
     private bool isCasting = false;
     private float currentCastTimer = 0f;
@@ -54,7 +58,7 @@ public class PlayerCombat : MonoBehaviour
             }
         }
 
-        // 4. X키 뗠 때 발사 (조건 체크 보완)
+        // 4. X키 뗄 때 발사 (캐릭터 바라보는 방향 기준 부채꼴)
         if (Input.GetKeyUp(KeyCode.X) && isCasting)
         {
             Debug.Log($"[시스템] X키 뗌! 현재 충전 시간: {currentCastTimer:F2}초 / 목표 시간: {castTime:F2}초");
@@ -122,14 +126,38 @@ public class PlayerCombat : MonoBehaviour
             return;
         }
 
-        // 총알 생성 후 방향 전달
+        // 1발일 때는 정면 발사
+        if (bulletCount <= 1)
+        {
+            SpawnBullet(direction);
+            return;
+        }
+
+        // 캐릭터가 보는 정면 각도를 기준으로 부채꼴 각도 계산
+        float baseAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        float startAngle = baseAngle - (spreadAngle * 0.5f);
+        float angleStep = spreadAngle / (bulletCount - 1);
+
+        for (int i = 0; i < bulletCount; i++)
+        {
+            float currentAngle = startAngle + (angleStep * i);
+            float rad = currentAngle * Mathf.Deg2Rad;
+            Vector2 bulletDir = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
+
+            SpawnBullet(bulletDir);
+        }
+
+        Debug.Log($"[성공] 부채꼴 총알 {bulletCount}발 발사 성공!");
+    }
+
+    void SpawnBullet(Vector2 dir)
+    {
         GameObject bulletObj = Instantiate(magicBulletPrefab, wandTip.position, Quaternion.identity);
         MagicBullet bullet = bulletObj.GetComponent<MagicBullet>();
 
         if (bullet != null)
         {
-            bullet.Init(direction);
-            Debug.Log("[성공] 총알 발사 성공!");
+            bullet.Init(dir);
         }
         else
         {
