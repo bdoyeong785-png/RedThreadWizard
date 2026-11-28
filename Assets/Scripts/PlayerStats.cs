@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
 {
+    [Header("UI 연결")]
+    [SerializeField] private HUD_UI hudUI;
+
     [Header("HP / MP 설정")]
     public float maxHp = 100f;
     public float currentHp;
@@ -42,6 +45,7 @@ public class PlayerStats : MonoBehaviour
 
     void Awake()
     {
+
         currentHp = maxHp;
         currentMp = maxMp;
         currentShieldHp = shieldMaxHp;
@@ -53,6 +57,16 @@ public class PlayerStats : MonoBehaviour
             shieldObject.SetActive(false);
         }
     }
+    
+    void Start()
+    {
+        if (hudUI != null)
+        {
+            hudUI.UpdateHP(currentHp, maxHp);
+            hudUI.UpdateMP(currentMp, maxMp);
+        }
+    }
+
 
     void Update()
     {
@@ -175,6 +189,9 @@ public class PlayerStats : MonoBehaviour
         if (currentMp >= amount)
         {
             currentMp -= amount;
+            
+            if (hudUI != null) hudUI.UpdateMP(currentMp, maxMp);
+
             return true;
         }
         return false;
@@ -183,6 +200,7 @@ public class PlayerStats : MonoBehaviour
     public void RestoreMp(float amount)
     {
         currentMp = Mathf.Min(currentMp + amount, maxMp);
+        if (hudUI != null) hudUI.UpdateMP(currentMp, maxMp);
         Debug.Log($"[마나 회복] 현재 MP: {currentMp} / {maxMp}");
     }
 
@@ -191,6 +209,7 @@ public class PlayerStats : MonoBehaviour
         if (isShieldActive)
         {
             currentShieldHp -= damage;
+           
             UpdateShieldColor(); // 맞을 때마다 즉시 색상 갱신
             Debug.Log($"[보호막 방어] 남은 보호막 내구도: {currentShieldHp}");
 
@@ -203,6 +222,7 @@ public class PlayerStats : MonoBehaviour
         }
 
         currentHp -= damage;
+        if (hudUI != null) hudUI.UpdateHP(currentHp, maxHp);
         Debug.Log($"[플레이어 피격] 남은 HP: {currentHp}");
 
         if (currentHp <= 0)
